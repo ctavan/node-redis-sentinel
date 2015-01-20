@@ -1,5 +1,7 @@
 var redis = require('redis'),
     net = require('net'),
+    _ = require('underscore'),
+    os = require('os'),
     when = require('when');
 
 function Sentinel(endpoints) {
@@ -293,7 +295,18 @@ function getSlaveFromEndpoint(endpoint, masterName, callback) {
         } else if(result.length === 0){
             callback(new Error("No slaves linked to the master."));
         } else {
-            var slaveInfoArr = result[Math.floor(Math.random() * result.length)]; //range 0 to result.length -1
+            var newDcRegex = /^64\.95/;
+            var isNewDc = _.some(os.networkInterfaces(), function(interfaces) {
+              return _.some(interfaces, function(interface) {
+                return interface.address.match(newDcRegex);
+              });
+            });
+            var filtered = result.filter(function(slave) {
+              var slaveInfo = parseSentinelResponse(slave);
+              var slaveInNewDc = slaveInfo.ip.match(newDcRegex);
+              return Boolean(isNewDc) === Boolean(slaveInNewDc);
+            });
+            var slaveInfoArr = filtered[Math.floor(Math.random() * filtered.length)]; //range 0 to result.length -1
             if((slaveInfoArr.length % 2) > 0){
                 callback(new Error("Corrupted response from the sentinel"));
             } else {

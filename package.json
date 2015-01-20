@@ -1,6 +1,6 @@
 {
   "name": "redis-sentinel",
-  "version": "0.3.0",
+  "version": "0.3.1-dcaware2",
   "description": "Redis sentinel client for nodejs",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,7 @@
   ],
   "dependencies": {
     "redis": "0.12.x",
+    "underscore": "^1.7.0",
     "when": "^3.5.1"
   },
   "devDependencies": {
